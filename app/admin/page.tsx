@@ -10,6 +10,7 @@ interface Customer {
   phone?: string;          // ✅ เพิ่ม
   line_id?: string;
   account_no: string;
+  tradingview_user?: string;
   broker_name?: string;    // ✅ เพิ่ม
   plan_type: string;
   expiry_date: string;
@@ -21,6 +22,7 @@ type CustomerForm = {
   phone: string;
   line_id: string;
   account_no: string;
+  tradingview_user: string;
   broker_name: string;
   plan_type: string;
   expiry_date: string;
@@ -95,6 +97,7 @@ const emptyForm: CustomerForm = {
   phone: "",
   line_id: "",
   account_no: "",
+  tradingview_user: "",
   broker_name: "Eterwealth",
   plan_type: "MONTHLY_1000",
   expiry_date: addMonths(new Date().toISOString(), 1),
@@ -184,6 +187,7 @@ export default function IndyCrmAdminDashboard() {
       phone: c.phone || "",
       line_id: c.line_id || "",
       account_no: c.account_no || "",
+      tradingview_user: c.tradingview_user || "",
       broker_name: c.broker_name || "Eterwealth",
       plan_type: c.plan_type || "MONTHLY_1000",
       expiry_date: c.expiry_date || addMonths(new Date().toISOString(), 1),
@@ -312,7 +316,7 @@ export default function IndyCrmAdminDashboard() {
                     <tr key={c.id} className="border-b last:border-b-0">
                       <td className="py-3 pr-3">
                         <div className="font-medium text-slate-900">{c.name}</div>
-                        <div className="text-xs text-slate-500">โทร: {c.phone || "-"} | LINE: {c.line_id || "-"}</div>
+                        <div className="text-xs text-slate-500">โทร: {c.phone || "-"} | LINE: {c.line_id || "-"} | TV: {c.tradingview_user || "-"}</div>
                       </td>
                       <td className="py-3 pr-3 font-mono">{c.account_no}</td>
                       <td className="py-3 pr-3">
@@ -389,13 +393,23 @@ export default function IndyCrmAdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600">Account No. (โบรก)</label>
+                  <label className="text-xs text-slate-600">User ID(โบรก)</label>
                   <input
                     value={form.account_no}
                     onChange={(e) => setForm({ ...form, account_no: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-mono"
                   />
                 </div>
+                <div>
+                  <label className="text-xs text-slate-600">TradingView User</label>
+                    <input
+                      value={form.tradingview_user}
+                      onChange={(e) => setForm({ ...form, tradingview_user: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                      placeholder="เช่น coachkung99"
+                    />
+                </div>
+
                 <div>
                   <label className="text-xs text-slate-600">ชื่อโบรกเกอร์</label>
                   <input
