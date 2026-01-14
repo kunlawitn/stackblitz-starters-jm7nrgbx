@@ -1,4 +1,17 @@
 "use client";
+type StatusType = "ACTIVE" | "EXPIRING" | "EXPIRED";
+
+interface Customer {
+  id: string;
+  name: string;
+  phone?: string;
+  line_id?: string;
+  account_no: string;
+  plan_type: string;
+  expiry_date: string;
+  status: StatusType;
+}
+
 import React, { useEffect, useMemo, useState } from "react";
 
 // Indy CRM MVP – Admin-only dashboard (front-end scaffold)
@@ -24,7 +37,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 const API_BASE = ""; // <-- set this
 
-const StatusPill = ({ status }) => {
+const StatusPill = ({ status }: { status: StatusType }) => {
   const map = {
     ACTIVE: "bg-green-100 text-green-700 border-green-200",
     EXPIRING: "bg-amber-100 text-amber-700 border-amber-200",
@@ -38,7 +51,7 @@ const StatusPill = ({ status }) => {
   );
 };
 
-const kpiCard = (title, value, sub) => (
+const kpiCard = (title: string, value: number, sub?: string) => (
   <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
     <div className="text-sm text-slate-500">{title}</div>
     <div className="mt-1 text-2xl font-semibold text-slate-900">{value}</div>
@@ -46,14 +59,14 @@ const kpiCard = (title, value, sub) => (
   </div>
 );
 
-function formatDate(d) {
+function formatDate(d: string | null): string {
   if (!d) return "-";
   const dt = new Date(d);
   if (Number.isNaN(dt.getTime())) return "-";
   return dt.toLocaleDateString();
 }
 
-function addMonths(dateStr, months) {
+function addMonths(dateStr: string, months: number): string {
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
   const day = d.getDate();
