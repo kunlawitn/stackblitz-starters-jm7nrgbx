@@ -166,12 +166,14 @@ export default function IndyCrmAdminDashboard() {
       const expiring = list.filter((x) => x.status === "EXPIRING").length;
       const expired = list.filter((x) => x.status === "EXPIRED").length;
   
-      // ถ้า /api/stats มีค่าถูกต้อง ใช้ค่านั้น ไม่งั้นใช้ค่าที่คำนวณเอง
-      if (st && typeof st.total === "number") {
+      // ใช้ stats จาก API เฉพาะเมื่อ "น่าเชื่อถือ" (ตรงกับ listsu list)
+      // ถ้า /api/stats ยังไม่พร้อมหรือคืน 0 ตลอด จะไม่ให้มาทับค่าจาก list
+      if (st && typeof st.total === "number" && (list.length === 0 || st.total === list.length)) {
         setStats(st);
       } else {
         setStats({ total, active, expiring, expired });
       }
+
     } catch (e) {
       console.error(e);
       setCustomers([]);
