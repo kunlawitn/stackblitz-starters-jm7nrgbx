@@ -1,13 +1,17 @@
+type TelegramParseMode = "Markdown" | "HTML";
+
 export async function sendTelegram(
   text: string,
-  opts?: { parse_mode?: "Markdown" | "HTML" }
+  opts?: { parse_mode?: TelegramParseMode }
 ) {
   const token = process.env.TG_BOT_TOKEN;
   const chatId = process.env.TG_CHAT_ID;
 
-  // ถ้ายังไม่ตั้ง env ให้ไม่ล้ม
+  // ✅ debug ให้รู้เลยว่า env มาครบไหม (ดูใน Vercel Functions Logs)
+  console.log("TG ENV:", { hasToken: !!token, hasChatId: !!chatId });
+
   if (!token || !chatId) {
-    console.warn("Telegram env missing: TG_BOT_TOKEN or TG_CHAT_ID");
+    console.warn("Telegram skipped: env missing");
     return { ok: false, skipped: true };
   }
 
@@ -23,12 +27,12 @@ export async function sendTelegram(
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json().catch(() => null);
+  const json = await res.json();
+  console.log("Telegram response:", json);
 
-  if (!res.ok) {
-    console.error("Telegram API error:", res.status, data);
-    throw new Error(`Telegram send failed (${res.status})`);
+  if (!res.ok || !json?.ok) {
+    throw new Error(json?.description || `Telegram send failed (${res.status})`);
   }
 
-  return data;
+  return json;
 }
