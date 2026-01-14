@@ -16,6 +16,16 @@ interface Customer {
   status: StatusType;
   note?: string;
 }
+type CustomerForm = {
+  name: string;
+  phone: string;
+  line_id: string;
+  account_no: string;
+  broker_name: string;
+  plan_type: string;
+  expiry_date: string;
+  note: string;
+};
 
 
 // Indy CRM MVP – Admin-only dashboard (front-end scaffold)
@@ -80,7 +90,7 @@ function addMonths(dateStr: string, months: number): string {
   return d.toISOString();
 }
 
-const emptyForm = {
+const emptyForm: CustomerForm = {
   name: "",
   phone: "",
   line_id: "",
@@ -91,18 +101,8 @@ const emptyForm = {
   note: "",
 };
 
-type CustomerForm = {
-  name: string;
-  phone: string;
-  line_id: string;
-  account_no: string;
-  broker_name: string;
-  plan_type: string;
-  expiry_date: string;
-  note: string;
-};
 
-const [form, setForm] = useState<CustomerForm>(emptyForm);
+
 
 export default function IndyCrmAdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -115,19 +115,7 @@ export default function IndyCrmAdminDashboard() {
 
   const [openModal, setOpenModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-
-  // ✅ form state ต้องอยู่ในนี้
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    line_id: "",
-    account_no: "",
-    broker_name: "Eterwealth",
-    plan_type: "MONTHLY_1000",
-    expiry_date: new Date().toISOString(),
-    note: ""
-  });
-  
+  const [form, setForm] = useState<CustomerForm>(emptyForm);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
