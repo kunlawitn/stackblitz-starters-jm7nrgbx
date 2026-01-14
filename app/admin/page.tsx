@@ -1,4 +1,7 @@
 "use client";
+
+import { useEffect, useMemo, useState } from "react";
+
 type StatusType = "ACTIVE" | "EXPIRING" | "EXPIRED";
 
 interface Customer {
@@ -11,8 +14,6 @@ interface Customer {
   expiry_date: string;
   status: StatusType;
 }
-
-import React, { useEffect, useMemo, useState } from "react";
 
 // Indy CRM MVP – Admin-only dashboard (front-end scaffold)
 // - Customer CRUD (add/edit/extend)
