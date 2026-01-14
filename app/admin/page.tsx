@@ -114,15 +114,17 @@ export default function IndyCrmAdminDashboard() {
   const [status, setStatus] = useState("ALL");
 
   const [openModal, setOpenModal] = useState(false);
-  const [editId, setEditId] = useState(null);
+  const [editId, setEditId] = useState<string | null>(null);
+
+  // ✅ form state ต้องอยู่ในนี้
   const [form, setForm] = useState({
     name: "",
-    phone: "",                 // ✅
+    phone: "",
     line_id: "",
     account_no: "",
-    broker_name: "Eterwealth", // ✅ default
-    plan_type: "",
-    expiry_date: "",
+    broker_name: "Eterwealth",
+    plan_type: "MONTHLY_1000",
+    expiry_date: new Date().toISOString(),
     note: ""
   });
   
