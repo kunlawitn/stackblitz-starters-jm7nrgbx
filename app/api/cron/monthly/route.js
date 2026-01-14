@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { sendTelegram } from '@/lib/telegram';
+import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { sendTelegram } from "../../../../lib/telegram";
 
 function diffDays(expiryDate) {
   const now = new Date();

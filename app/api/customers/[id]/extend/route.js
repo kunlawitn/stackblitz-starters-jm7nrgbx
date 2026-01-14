@@ -1,5 +1,5 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { sendTelegram } from "@/lib/telegram";
+import { supabaseAdmin } from "../../../../../lib/supabaseAdmin";
+import { sendTelegram } from "../../../../../lib/telegram";
 
 function addMonths(dateStr, months) {
   const d = new Date(dateStr);
