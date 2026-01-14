@@ -49,11 +49,12 @@ export async function POST(req) {
     phone: body.phone || null,
     line_id: body.line_id || null,
     account_no: body.account_no,
-    broker_name: "ETER WEALTH",
-    plan_type: body.plan_type || "MONTHLY_1000",
-    start_date: body.start_date ? body.start_date.slice(0,10) : null,
-    expiry_date: body.expiry_date ? body.expiry_date.slice(0,10) : null,
+    broker_name: body.broker_name?.trim() || "Eterwealth",
+    plan_type: body.plan_type,
+    expiry_date: body.expiry_date,
     note: body.note || null,
+    status: body.status || "ACTIVE"
+    // ✅ ไม่ส่ง start_date เพื่อให้ DB default current_date ทำงาน
   };
 
   const { data, error } = await supabaseAdmin

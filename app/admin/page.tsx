@@ -7,13 +7,16 @@ type StatusType = "ACTIVE" | "EXPIRING" | "EXPIRED";
 interface Customer {
   id: string;
   name: string;
-  phone?: string;
+  phone?: string;          // ✅ เพิ่ม
   line_id?: string;
   account_no: string;
+  broker_name?: string;    // ✅ เพิ่ม
   plan_type: string;
   expiry_date: string;
   status: StatusType;
+  note?: string;
 }
+
 
 // Indy CRM MVP – Admin-only dashboard (front-end scaffold)
 // - Customer CRUD (add/edit/extend)
@@ -82,16 +85,29 @@ const emptyForm = {
   phone: "",
   line_id: "",
   account_no: "",
-  plan_type: "MONTHLY_1000", // or DEPOSIT_1000
-  start_date: new Date().toISOString(),
+  broker_name: "Eterwealth",
+  plan_type: "MONTHLY_1000",
   expiry_date: addMonths(new Date().toISOString(), 1),
   note: "",
 };
 
+type CustomerForm = {
+  name: string;
+  phone: string;
+  line_id: string;
+  account_no: string;
+  broker_name: string;
+  plan_type: string;
+  expiry_date: string;
+  note: string;
+};
+
+const [form, setForm] = useState<CustomerForm>(emptyForm);
+
 export default function IndyCrmAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [stats, setStats] = useState({ active: 0, expiring: 0, expired: 0, total: 0 });
 
   const [query, setQuery] = useState("");
@@ -99,7 +115,17 @@ export default function IndyCrmAdminDashboard() {
 
   const [openModal, setOpenModal] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ ...emptyForm });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",                 // ✅
+    line_id: "",
+    account_no: "",
+    broker_name: "Eterwealth", // ✅ default
+    plan_type: "",
+    expiry_date: "",
+    note: ""
+  });
+  
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -159,6 +185,7 @@ export default function IndyCrmAdminDashboard() {
     setForm({ ...emptyForm });
     setOpenModal(true);
   }
+  
 
   function openEdit(c) {
     setEditId(c.id);
@@ -167,39 +194,41 @@ export default function IndyCrmAdminDashboard() {
       phone: c.phone || "",
       line_id: c.line_id || "",
       account_no: c.account_no || "",
+      broker_name: c.broker_name || "Eterwealth",
       plan_type: c.plan_type || "MONTHLY_1000",
-      start_date: c.start_date || new Date().toISOString(),
       expiry_date: c.expiry_date || addMonths(new Date().toISOString(), 1),
       note: c.note || "",
     });
     setOpenModal(true);
   }
+  
 
   async function save() {
     setSaving(true);
     try {
       const payload = {
         ...form,
-        // keep broker fixed for this project
-        broker_name: "ETER WEALTH",
+        broker_name: (form.broker_name || "Eterwealth").trim() || "Eterwealth",
       };
+  
       if (!payload.account_no) throw new Error("account_no is required");
       if (!payload.name) throw new Error("name is required");
-
+  
       if (editId) {
         await api(`/api/customers/${editId}`, { method: "PATCH", body: JSON.stringify(payload) });
       } else {
-        // backend should send Telegram alert on create
         await api(`/api/customers`, { method: "POST", body: JSON.stringify(payload) });
       }
+  
       setOpenModal(false);
       await loadAll();
-    } catch (e) {
+    } catch (e: any) {
       alert(e.message || "Save failed");
     } finally {
       setSaving(false);
     }
   }
+  
 
   async function extend(c, months = 1) {
     if (!confirm(`Extend ${c.name} for ${months} month(s)?`)) return;
@@ -375,6 +404,15 @@ export default function IndyCrmAdminDashboard() {
                     value={form.account_no}
                     onChange={(e) => setForm({ ...form, account_no: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-600">ชื่อโบรกเกอร์</label>
+                  <input
+                    value={form.broker_name}
+                    onChange={(e) => setForm({ ...form, broker_name: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    placeholder="Eterwealth"
                   />
                 </div>
                 <div>
