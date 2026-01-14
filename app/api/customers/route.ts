@@ -77,16 +77,17 @@ export async function POST(req: Request) {
   // ✅ Telegram (กันพังด้วย try/catch)
   try {
     await sendTelegram(
-      `✅ *สมัครใหม่*\n` +
+      `✅ <b>สมัครใหม่</b>\n` +
       `👤 ${data.name}\n` +
       `📞 ${data.phone || "-"} | LINE: ${data.line_id || "-"}\n` +
       `🏦 Broker: ${data.broker_name || "-"}\n` +
-      `🧾 Account: \`${data.account_no}\`\n` +
+      `🧾 Account: <code>${data.account_no}</code>\n` +
       `📺 TV: ${data.tradingview_user || "-"}\n` +
       `📦 Plan: ${data.plan_type}\n` +
       `⏳ Expiry: ${data.expiry_date}`,
-      { parse_mode: "Markdown" }
+      { parse_mode: "HTML" }
     );
+    
   } catch (e: any) {
     console.error("Telegram failed:", e?.message || e);
   }
