@@ -156,18 +156,31 @@ export default function IndyCrmAdminDashboard() {
         api(`/api/customers?query=${encodeURIComponent(query)}&status=${encodeURIComponent(status)}`),
         api(`/api/stats`),
       ]);
-      setCustomers(cust || []);
-      setStats(st || { active: 0, expiring: 0, expired: 0, total: (cust || []).length });
+  
+      const list: Customer[] = cust || [];
+      setCustomers(list);
+  
+      // คำนวณ KPI จาก list เป็น fallback
+      const total = list.length;
+      const active = list.filter((x) => x.status === "ACTIVE").length;
+      const expiring = list.filter((x) => x.status === "EXPIRING").length;
+      const expired = list.filter((x) => x.status === "EXPIRED").length;
+  
+      // ถ้า /api/stats มีค่าถูกต้อง ใช้ค่านั้น ไม่งั้นใช้ค่าที่คำนวณเอง
+      if (st && typeof st.total === "number") {
+        setStats(st);
+      } else {
+        setStats({ total, active, expiring, expired });
+      }
     } catch (e) {
       console.error(e);
-      // fallback (demo mode)
       setCustomers([]);
-      setStats({ active: 0, expiring: 0, expired: 0, total: 0 });
+      setStats({ total: 0, active: 0, expiring: 0, expired: 0 });
     } finally {
       setLoading(false);
     }
   }
-
+  
   useEffect(() => {
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
