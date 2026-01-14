@@ -1,5 +1,12 @@
 type TelegramParseMode = "Markdown" | "HTML";
 
+function escapeHtml(s: string) {
+  return s
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
 export async function sendTelegram(
   text: string,
   opts?: { parse_mode?: TelegramParseMode }
@@ -7,18 +14,19 @@ export async function sendTelegram(
   const token = process.env.TG_BOT_TOKEN;
   const chatId = process.env.TG_CHAT_ID;
 
-  // ✅ debug ให้รู้เลยว่า env มาครบไหม (ดูใน Vercel Functions Logs)
   console.log("TG ENV:", { hasToken: !!token, hasChatId: !!chatId });
-
   if (!token || !chatId) {
     console.warn("Telegram skipped: env missing");
     return { ok: false, skipped: true };
   }
 
+  const parseMode: TelegramParseMode = opts?.parse_mode ?? "HTML";
+  const safeText = parseMode === "HTML" ? escapeHtml(text) : text;
+
   const payload = {
     chat_id: chatId,
-    text,
-    parse_mode: opts?.parse_mode ?? "Markdown",
+    text: safeText,
+    parse_mode: parseMode,
   };
 
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
