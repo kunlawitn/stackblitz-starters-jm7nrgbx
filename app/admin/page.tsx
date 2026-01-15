@@ -119,6 +119,12 @@ export default function IndyCrmAdminDashboard() {
   const [openModal, setOpenModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<CustomerForm>(emptyForm);
+  const PLAN_LABEL: Record<string, string> = {
+    MONTHLY_1000: "รายเดือน 1,000 บาท",
+    DEPOSIT_1000: "ฝาก $1,000",
+    TRY_7: "ทดลองใช้ 7 วัน",
+    TRY_14: "ทดลองใช้ 14 วัน",
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -165,6 +171,7 @@ export default function IndyCrmAdminDashboard() {
       const active = list.filter((x) => x.status === "ACTIVE").length;
       const expiring = list.filter((x) => x.status === "EXPIRING").length;
       const expired = list.filter((x) => x.status === "EXPIRED").length;
+      
   
       // ใช้ stats จาก API เฉพาะเมื่อ "น่าเชื่อถือ" (ตรงกับ listsu list)
       // ถ้า /api/stats ยังไม่พร้อมหรือคืน 0 ตลอด จะไม่ให้มาทับค่าจาก list
@@ -336,7 +343,7 @@ export default function IndyCrmAdminDashboard() {
                       <td className="py-3 pr-3 font-mono">{c.account_no}</td>
                       <td className="py-3 pr-3">
                         <span className="text-xs rounded-lg border border-slate-200 px-2 py-1">
-                          {c.plan_type === "DEPOSIT_1000" ? "ฝาก $1,000" : "รายเดือน 1,000"}
+                          {PLAN_LABEL[c.plan_type] || c.plan_type}
                         </span>
                       </td>
                       <td className="py-3 pr-3">{formatDate(c.expiry_date)}</td>
@@ -441,10 +448,12 @@ export default function IndyCrmAdminDashboard() {
                     onChange={(e) => setForm({ ...form, plan_type: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                   >
-                    <option value="MONTHLY_1000">รายเดือน 1,000 บาท</option>
-                    <option value="DEPOSIT_1000">ฝาก $1,000</option>
-                    <option value="TRY_7">ทดลองใช้ 7 วัน</option>
-                    <option value="TRY_14">ทดลองใช้ 14 วัน</option>
+                    {Object.entries(PLAN_LABEL).map(([value, label]) => (
+                    <option key={value} value={value}>
+                    {label}
+                    </option>
+                    ))}
+
                   </select>
                 </div>
                 <div>
