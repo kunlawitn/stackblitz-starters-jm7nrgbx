@@ -443,6 +443,8 @@ export default function IndyCrmAdminDashboard() {
                   >
                     <option value="MONTHLY_1000">รายเดือน 1,000 บาท</option>
                     <option value="DEPOSIT_1000">ฝาก $1,000</option>
+                    <option value="TRY_7">ทดลองใช้ 7 วัน</option>
+                    <option value="TRY_14">ทดลองใช้ 14 วัน</option>
                   </select>
                 </div>
                 <div>
