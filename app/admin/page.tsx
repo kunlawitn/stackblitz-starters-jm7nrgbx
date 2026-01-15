@@ -400,7 +400,7 @@ export default function IndyCrmAdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600">LINE ID</label>
+                  <label className="text-xs text-slate-600">ชื่อใน Line/Facebook</label>
                   <input
                     value={form.line_id}
                     onChange={(e) => setForm({ ...form, line_id: e.target.value })}

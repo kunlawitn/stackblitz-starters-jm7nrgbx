@@ -79,9 +79,9 @@ export async function POST(req: Request) {
     await sendTelegram(
       `✅ <b>สมัครใหม่</b>\n` +
       `👤 ${data.name}\n` +
-      `📞 ${data.phone || "-"} | LINE: ${data.line_id || "-"}\n` +
+      `📞 ${data.phone || "-"} | Line/Facebook: ${data.line_id || "-"}\n` +
       `🏦 Broker: ${data.broker_name || "-"}\n` +
-      `🧾 Account: <code>${data.account_no}</code>\n` +
+      `🧾 User ID: <code>${data.account_no}</code>\n` +
       `📺 TV: ${data.tradingview_user || "-"}\n` +
       `📦 Plan: ${data.plan_type}\n` +
       `⏳ Expiry: ${data.expiry_date}`,

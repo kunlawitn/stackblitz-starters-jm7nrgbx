@@ -48,7 +48,7 @@ export async function POST(
     `เดือน: +${months}\n` +
     `หมดอายุใหม่: ${newExpiry}\n` +
     `Broker: ${customer.broker_name || "-"}\n` +
-    `Account: ${customer.account_no || "-"}\n` +
+    `User ID: ${customer.account_no || "-"}\n` +
     `TV: ${customer.tradingview_user || "-"}`
   );
 
