@@ -167,10 +167,13 @@ export default function IndyCrmAdminDashboard() {
   }
   async function loadOwners() {
     try {
-      const list = await api(`/api/customer-owners`);
-      setOwners(Array.isArray(list) ? list : []);
+      const res = await api(`/api/customer-owners`);
+  
+      // รองรับทั้ง array ตรงๆ และ {data:[...]}
+      const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      setOwners(list);
     } catch (e) {
-      console.error(e);
+      console.error("loadOwners failed:", e);
       setOwners([]);
     }
   }
