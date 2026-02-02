@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 type StatusType = "ACTIVE" | "EXPIRING" | "EXPIRED";
+type Owner = { id: string; name: string };
 
 interface Customer {
   id: string;
@@ -16,6 +17,9 @@ interface Customer {
   expiry_date: string;
   status: StatusType;
   note?: string;
+  owner_id?: string | null;
+  owner?: Owner | null;
+  owner_name?: string | null;
 }
 type CustomerForm = {
   name: string;
@@ -27,6 +31,7 @@ type CustomerForm = {
   plan_type: string;
   expiry_date: string;
   note: string;
+  owner_id: string;
 };
 
 
@@ -102,6 +107,7 @@ const emptyForm: CustomerForm = {
   plan_type: "MONTHLY_1000",
   expiry_date: addMonths(new Date().toISOString(), 1),
   note: "",
+  owner_id: "",
 };
 
 
@@ -112,6 +118,7 @@ export default function IndyCrmAdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [stats, setStats] = useState({ active: 0, expiring: 0, expired: 0, total: 0 });
+  const [owners, setOwners] = useState<Owner[]>([]);
 
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("ALL");
@@ -120,8 +127,10 @@ export default function IndyCrmAdminDashboard() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<CustomerForm>(emptyForm);
   const PLAN_LABEL: Record<string, string> = {
-    MONTHLY_1000: "รายเดือน 1,000 บาท",
+    DEPOSIT_300: "ฝาก $300",
+    DEPOSIT_500: "ฝาก $500",
     DEPOSIT_1000: "ฝาก $1,000",
+    MONTHLY_1000: "รายเดือน 1,000 บาท",
     TRY_7: "ทดลองใช้ 7 วัน",
     TRY_14: "ทดลองใช้ 14 วัน",
   };
@@ -136,7 +145,9 @@ export default function IndyCrmAdminDashboard() {
           (c.name || "").toLowerCase().includes(q) ||
           (c.phone || "").toLowerCase().includes(q) ||
           (c.line_id || "").toLowerCase().includes(q) ||
-          (c.account_no || "").toLowerCase().includes(q)
+          (c.account_no || "").toLowerCase().includes(q) ||
+          (c.tradingview_user || "").toLowerCase().includes(q) ||
+          ((c.owner_name || c.owner?.name || "")).toLowerCase().includes(q)
         );
       });
   }, [customers, query, status]);
@@ -154,7 +165,15 @@ export default function IndyCrmAdminDashboard() {
     }
     return res.status === 204 ? null : res.json();
   }
-
+  async function loadOwners() {
+    try {
+      const list = await api(`/api/customer-owners`);
+      setOwners(Array.isArray(list) ? list : []);
+    } catch (e) {
+      console.error(e);
+      setOwners([]);
+    }
+  }
   async function loadAll() {
     setLoading(true);
     try {
@@ -192,6 +211,7 @@ export default function IndyCrmAdminDashboard() {
   
   useEffect(() => {
     loadAll();
+    loadOwners();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -213,6 +233,7 @@ export default function IndyCrmAdminDashboard() {
       broker_name: c.broker_name || "Eterwealth",
       plan_type: c.plan_type || "MONTHLY_1000",
       expiry_date: c.expiry_date || addMonths(new Date().toISOString(), 1),
+      owner_id: (c.owner?.id || c.owner_id || "") as string,
       note: c.note || "",
     });
     setOpenModal(true);
@@ -225,6 +246,7 @@ export default function IndyCrmAdminDashboard() {
       const payload = {
         ...form,
         broker_name: (form.broker_name || "Eterwealth").trim() || "Eterwealth",
+        owner_id: form.owner_id ? form.owner_id : null,
       };
   
       if (!payload.account_no) throw new Error("account_no is required");
@@ -286,7 +308,7 @@ export default function IndyCrmAdminDashboard() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="ค้นหา: ชื่อ / โทร / LINE / account"
+                placeholder="ค้นหา: ชื่อ / โทร / LINE / account / TV / แม่ทีม"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
               />
               <select
@@ -314,6 +336,7 @@ export default function IndyCrmAdminDashboard() {
                 <tr className="text-left text-slate-500 border-b">
                   <th className="py-2 pr-3">ลูกค้า</th>
                   <th className="py-2 pr-3">Account</th>
+                  <th className="py-2 pr-3">แม่ทีม</th>
                   <th className="py-2 pr-3">แผน</th>
                   <th className="py-2 pr-3">หมดอายุ</th>
                   <th className="py-2 pr-3">สถานะ</th>
@@ -323,13 +346,13 @@ export default function IndyCrmAdminDashboard() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-slate-500">
+                    <td colSpan={7} className="py-6 text-center text-slate-500">
                       Loading...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-slate-500">
+                    <td colSpan={7} className="py-6 text-center text-slate-500">
                       ไม่พบข้อมูล
                     </td>
                   </tr>
@@ -341,6 +364,9 @@ export default function IndyCrmAdminDashboard() {
                         <div className="text-xs text-slate-500">โทร: {c.phone || "-"} | LINE: {c.line_id || "-"} | TV: {c.tradingview_user || "-"}</div>
                       </td>
                       <td className="py-3 pr-3 font-mono">{c.account_no}</td>
+                      <td className="py-3 pr-3">
+                        <div className="text-slate-900">{c.owner_name || c.owner?.name || "-"}</div>
+                      </td>
                       <td className="py-3 pr-3">
                         <span className="text-xs rounded-lg border border-slate-200 px-2 py-1">
                           {PLAN_LABEL[c.plan_type] || c.plan_type}
@@ -440,6 +466,21 @@ export default function IndyCrmAdminDashboard() {
                     className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                     placeholder="Eterwealth"
                   />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-600">แม่ทีม / เจ้าของลูกค้า</label>
+                  <select
+                    value={form.owner_id}
+                    onChange={(e) => setForm({ ...form, owner_id: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  >
+                    <option value="">- ไม่ระบุ -</option>
+                      {owners.map((o) => (
+                      <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                      ))}
+                  </select>
                 </div>
                 <div>
                   <label className="text-xs text-slate-600">แพ็กเกจ</label>
