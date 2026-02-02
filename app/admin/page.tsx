@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+
+<Link
+  href="/admin/dashboard"
+  className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
+>
+  ไปหน้า Dashboard
+</Link>
 
 type StatusType = "ACTIVE" | "EXPIRING" | "EXPIRED";
 type Owner = { id: string; name: string };

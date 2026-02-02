@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { sendTelegram } from "@/lib/telegram";
+import { getPlanValue, monthStartISO } from "@/lib/planValue";
 
 type Status = "ACTIVE" | "EXPIRING" | "EXPIRED";
 
@@ -22,26 +23,21 @@ function norm(v: any): string {
 
 function toDateOnly(v: any): string | null {
   if (!v) return null;
-  // รองรับทั้ง Date, string, timestamp-ish
   const s = String(v).trim();
   if (!s) return null;
-  // ถ้ามาเป็น ISO หรือ yyyy-mm-dd
   return s.slice(0, 10);
 }
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
-  // ใช้ key เดิม: query/status
   const query = norm(searchParams.get("query"));
   const status = (searchParams.get("status") || "ALL").toUpperCase() as
     | "ALL"
     | Status;
 
-  // เพิ่ม filter เจ้าของ: ownerId (optional)
   const ownerId = (searchParams.get("ownerId") || "").trim();
 
-  // --- ดึงข้อมูลแบบ join เจ้าของ ---
   let q = supabaseAdmin
     .from("customers")
     .select(
@@ -55,27 +51,19 @@ export async function GET(req: Request) {
     )
     .order("created_at", { ascending: false });
 
-  if (ownerId) {
-    q = q.eq("owner_id", ownerId);
-  }
+  if (ownerId) q = q.eq("owner_id", ownerId);
 
   const { data, error } = await q;
-
   if (error) return new Response(error.message, { status: 500 });
 
-  const mapped = (data || []).map((c: any) => {
-    const st = calcStatus(c.expiry_date);
-    return {
-      ...c,
-      status: st,
-      owner_name: c?.owner?.name ?? null, // เผื่อ UI ใช้แบบง่าย
-    };
-  });
+  const mapped = (data || []).map((c: any) => ({
+    ...c,
+    status: calcStatus(c.expiry_date),
+    owner_name: c?.owner?.name ?? null,
+  }));
 
-  // --- filter แบบเดิม + เพิ่มค้นจาก owner_name, broker, tv user ---
   const filtered = mapped.filter((c: any) => {
     const okStatus = status === "ALL" ? true : c.status === status;
-
     if (!query) return okStatus;
 
     const hit =
@@ -108,10 +96,7 @@ export async function POST(req: Request) {
     plan_type: String(body.plan_type || "MONTHLY_1000").trim() || "MONTHLY_1000",
     expiry_date: toDateOnly(body.expiry_date),
     note: body.note ? String(body.note).trim() : null,
-
-    // ✅ เพิ่มเจ้าของลูกค้า (config dropdown)
     owner_id: body.owner_id ? String(body.owner_id).trim() : null,
-
     updated_at: new Date().toISOString(),
   };
 
@@ -137,7 +122,31 @@ export async function POST(req: Request) {
 
   if (error) return new Response(error.message, { status: 500 });
 
-  // ✅ Telegram (กันพังด้วย try/catch)
+  // ✅ Billing event (สมัครใหม่) — กันพังด้วย try/catch
+  try {
+    const pv = getPlanValue(data.plan_type);
+    if (pv.countable) {
+      const { error: eBill } = await supabaseAdmin.from("billing_events").insert({
+        customer_id: data.id,
+        owner_id: data.owner_id ?? null,
+        event_type: "NEW",
+        plan_type: data.plan_type,
+        amount: pv.amount,
+        currency: pv.currency,
+        event_at: new Date().toISOString(),
+        event_month: monthStartISO(new Date()),
+      });
+
+      if (eBill) {
+        // ไม่ให้สมัครลูกค้าล้มเพราะ billing event
+        console.error("billing_events insert failed:", eBill.message);
+      }
+    }
+  } catch (e: any) {
+    console.error("billing_events failed:", e?.message || e);
+  }
+
+  // ✅ Telegram
   try {
     await sendTelegram(
       `✅ <b>สมัครใหม่</b>\n` +
