@@ -3,12 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-<Link
-  href="/admin/dashboard"
-  className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
->
-  ไปหน้า Dashboard
-</Link>
 
 type StatusType = "ACTIVE" | "EXPIRING" | "EXPIRED";
 type Owner = { id: string; name: string };
@@ -298,6 +292,13 @@ export default function IndyCrmAdminDashboard() {
             <h1 className="text-2xl font-bold text-slate-900">Indy CRM – Admin</h1>
             <p className="text-sm text-slate-500 mt-1">ลูกค้าอินดี้ / ต่ออายุ / แจ้งเตือน Telegram (ทำโดยระบบหลังบ้าน)</p>
           </div>
+
+<Link
+  href="/admin/dashboard"
+  className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
+>
+  ไปหน้า Dashboard
+</Link>
           <button
             onClick={openAdd}
             className="rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-800"
